@@ -1,4 +1,6 @@
+#include <virtuabotixRTC.h>
 #include <Servo.h>
+
 Servo yatay_servo;
 Servo dusey_servo;
 
@@ -13,16 +15,19 @@ int ldr_guney_dogu=A2;
 int ldr_kuzey_bati=A3;
 int ldr_guney_bati=A4;
 
+virtuabotixRTC myRTC(6, 7, 8);
 
 void setup() {
   pinMode(A1,INPUT);
   pinMode(A2,INPUT);
   pinMode(A3,INPUT);
   pinMode(A4,INPUT);
-
   yatay_servo.attach(3);
   dusey_servo.attach(5);
+  
   Serial.begin(9600); 
+  myRTC.setDS1302Time(15, 22, 21, 7, 14, 1, 2018);
+  
   dusey_servo.write(0);
   yatay_servo.write(90);
 }
@@ -54,6 +59,8 @@ void loop() {
   int guney=(isik_guney_dogu+isik_guney_bati)/2;
 
   int toplam=isik_kuzey_dogu+isik_guney_dogu+isik_kuzey_bati+isik_guney_bati;
+
+  
   
   if((abs(dogu-bati)<=tolerans) || (abs(bati-dogu)<=tolerans)){}
   else{
@@ -75,17 +82,24 @@ void loop() {
     }
   }
   
-
+  
   yatay_servo.write(pos_y); 
   delay(10);
   dusey_servo.write(pos_d); 
+  delay(10);
+  myRTC.updateTime();
+  Serial.print(myRTC.seconds);
+  Serial.print(" || ");
+  Serial.print(pos_y);
+  Serial.print(" || ");
+  Serial.println(pos_d);
   delay(10);
 
   if(pos_d > 90) { pos_d = 90; } 
   if(pos_d < 10) { pos_d = 10; } 
   if(pos_y > 180) { pos_y = 180; } 
   if(pos_y < 10) { pos_y = 10; } 
-
+  
 if(toplam<100){
 if(d_home != pos_d){
   dusey_servo.write(d_home);
@@ -94,9 +108,7 @@ if(d_home != pos_d){
 if(y_home != pos_y){
   yatay_servo.write(y_home);
   pos_y=y_home;
+ 
 }
-
 }
-
-
 }
