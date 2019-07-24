@@ -1,72 +1,75 @@
+#include <virtuabotixRTC.h>
 #include <PID_v1.h>
-int motor_p1 = 10;
-int motor_p2 = 9;
-int pwmPin = 11;
+#define MotEnable 11 
+#define MotFwd  9  
+#define MotRev  10 
 
-int current_angle;
-int required_angle;
-int error;
-int remapped_error;
-int east;
-int west;
-int total;
+virtuabotixRTC myRTC(5, 4, 3);  //rst-->3 dat-->4 clk-->5
+                      
+int User_Input = 0; 
+int RPV = 0;          // setpoint required potentiometer value
+int month_angle[]={10,15,20,25,30,35,45,55,65,70,75,85,90};  //tilt angles
 
-int ldr_ne=A3;
-int ldr_se=A2;
-int ldr_nw=A1;
-int ldr_sw=A0;
+double kp = 5 , ki = 1 , kd = 0.01;     //pid values
+double input = 0, output = 0, setpoint = 0;
+PID myPID(&input, &output, &setpoint, kp, ki, kd, DIRECT);  
 
-int tolerance=5; 
-
- 
-//Define Variables we'll be connecting to
-double Setpoint, Input, Output;
- 
-//Specify the links and initial tuning parameters
-double Kp=2, Ki=5, Kd=1;
-PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
- 
-void setup()
-{
- //initialize the variables we're linked to
-  Serial.begin(9600);
-  pinMode(A1,INPUT);
-  pinMode(A2,INPUT);
-  pinMode(A3,INPUT);
-  pinMode(A4,INPUT);
-  pinMode(motor_p1, OUTPUT);
-  pinMode(motor_p2, OUTPUT);
-  pinMode(pwmPin, OUTPUT);
-  //turn the PID on
-  myPID.SetMode(AUTOMATIC);
-  myPID.SetTunings(Kp, Ki, Kd);
+void setup() {
+  pinMode(MotEnable, OUTPUT);
+  pinMode(MotFwd, OUTPUT); 
+  pinMode(MotRev, OUTPUT); 
+  Serial.begin(9600); 
+  
+  myRTC.setDS1302Time(00, 1, 1,7, 27, 11, 2016); //date    
+  TCCR1B = TCCR1B & 0b11111000 | 1;  // set 31KHz , prevent motor noise
+  
+  myPID.SetMode(AUTOMATIC);   //set pid in automatic mode
+  myPID.SetSampleTime(1);  // refresh rate of pid controller
+  myPID.SetOutputLimits(-125, 125); // this is the max pwm value to move motor
 }
- 
-void loop()
-{
-  int light_ne = analogRead(A3);
-  int light_se = analogRead(A2); 
-  int light_nw = analogRead(A1); 
-  int light_sw = analogRead(A0);  
 
-  east=(light_ne+light_se);
-  west=(light_nw+light_sw);
+void loop() {
+  myRTC.updateTime();
+  
+  User_Input=month_angle[myRTC.month];
+  RPV = map (User_Input, 0, 90, 577, 935); // mapping degree 
+  
+  Serial.print("this is RPV - "); 
+  Serial.println(RPV);               
 
-  total=(east+west)/2;
-  Setpoint=total;
-  if((abs(east-west)<=tolerance) || (abs(west-east)<=tolerance)){}
-  else{
-    if(east<west){
-      digitalWrite(motor_p1, HIGH);                      
-    digitalWrite(motor_p2, LOW);
-    }
-    if(east>west){
-      digitalWrite(motor_p1, LOW);                      
-    digitalWrite(motor_p2, HIGH);
-      
-    }
+  setpoint = RPV;                    //PID while work to achive this value consider as SET value
+  input = analogRead(A0) ;           // data from encoder consider as a Process value
+  Serial.print("pot - ");
+  Serial.println(User_Input);
+  myPID.Compute();                 // calculate new output
+  pwmOut(output);  
+}
+void pwmOut(int out) {                               
+  if (out > 0) {                           
+    analogWrite(MotEnable, out);         
+    forward();                          
   }
- Input = east;
- myPID.Compute();
- analogWrite(pwmPin, Output);
+  else {
+    analogWrite(MotEnable, abs(out));                    
+    reverse();                           
+  }
+  
+
+}
+
+void forward () {
+  digitalWrite(MotFwd, HIGH); 
+ digitalWrite(MotRev, LOW); 
+  
+}
+
+void reverse () {
+  digitalWrite(MotFwd, LOW); 
+ digitalWrite(MotRev, HIGH); 
+  
+}
+void finish () {
+  digitalWrite(MotFwd, LOW); 
+ digitalWrite(MotRev, LOW); 
+  
 }
