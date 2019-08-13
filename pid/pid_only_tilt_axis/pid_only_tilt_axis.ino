@@ -1,8 +1,8 @@
 #include <virtuabotixRTC.h>
 #include <PID_v1.h>
-#define MotEnable 11 
-#define MotFwd  9  
-#define MotRev  10 
+#define MotEnable 9 
+#define MotFwd  10  
+#define MotRev  11 
 
 virtuabotixRTC myRTC(5, 4, 3);  //rst-->3 dat-->4 clk-->5
                       
@@ -31,7 +31,7 @@ void setup() {
 void loop() {
   myRTC.updateTime();
   
-  User_Input=month_angle[myRTC.month];
+  User_Input=month_angle[myRTC.minutes];
   RPV = map (User_Input, 0, 90, 577, 935); // mapping degree 
   
   Serial.print("this is RPV - "); 
