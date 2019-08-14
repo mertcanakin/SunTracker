@@ -14,6 +14,8 @@
 #define MotRev2  7
 
 virtuabotixRTC myRTC(5, 4, 3);  //rst-->3 dat-->4 clk-->5
+
+int tolerance=15; //Tolerance for potentiometer
                       
 int User_Input = 0;   //For getting tilt angles
 int User_Input2 = 0;  //For getting azimuth angles
@@ -64,7 +66,7 @@ void loop() {
   User_Input=month_angle[myRTC.month];     //Tilt angles by month
   User_Input2=month_angle2[myRTC.month];   //Azimuth angles by month
   
-  RPV = map (User_Input, 0, 90, 577, 935);    //Mapping  
+  RPV = map (User_Input, 0, 90, 577, 935);    //Mapping potentiometer value 
   RPV2 = map (User_Input2, 0, 90, 300, 700); 
               
   setpoint = RPV;      //Setpoint value
@@ -79,6 +81,13 @@ void loop() {
   pwmOut(output);    
   pwmOut2(output2); 
 
+  if(abs(input-RPV)<tolerance){
+    finish();
+  }
+   if(abs(input2-RPV2)<tolerance){
+    finish2();
+  }
+
   Serial.print("Tilt Pot: ");
   Serial.print(input);
   Serial.print(" || ");
@@ -90,6 +99,9 @@ void loop() {
   Serial.print(" || ");
   Serial.print("RPV2: ");
   Serial.println(RPV2);
+
+
+  
 }
 //------Motor Control For Tilt Angles------
 
