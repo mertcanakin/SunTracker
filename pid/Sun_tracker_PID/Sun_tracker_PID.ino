@@ -1,13 +1,9 @@
-//Sun Tracker System
-
-
-
 #include <virtuabotixRTC.h>
 #include <PID_v1.h>
 
 #define MotEnable 9 
-#define MotFwd  10  
-#define MotRev  11 
+#define MotFwd  11  
+#define MotRev  10 
 
 #define MotEnable2 6 
 #define MotFwd2  8
@@ -15,7 +11,7 @@
 
 virtuabotixRTC myRTC(5, 4, 3);  //rst-->3 dat-->4 clk-->5
 
-int tolerance=15; //Tolerance for potentiometer
+int tolerance=25; //Tolerance for potentiometer
                       
 int User_Input = 0;   //For getting tilt angles
 int User_Input2 = 0;  //For getting azimuth angles
@@ -23,7 +19,7 @@ int User_Input2 = 0;  //For getting azimuth angles
 int RPV = 0;          // setpoint required potentiometer value(tilt)
 int RPV2 = 0;         // setpoint required potentiometer value(azimuth)
 
-int month_angle[]={10,15,20,25,30,35,45,55,65,70,75,85,90};  //tilt angles
+int month_angle[]={59,46,40,27,19,14,17,25,35,48,55,59};  //tilt angles
 int month_angle2[]={10,15,20,25,30,35,45,55,65,70,75,85,90}; //azimuth angles
 
 double kp = 5 , ki = 1 , kd = 0.01;     //pid parameters
@@ -62,7 +58,8 @@ void setup() {
 
 void loop() {
   myRTC.updateTime();   //updating time
-  
+
+  myRTC.month-=1;
   User_Input=month_angle[myRTC.month];     //Tilt angles by month
   User_Input2=month_angle2[myRTC.month];   //Azimuth angles by month
   
@@ -83,21 +80,25 @@ void loop() {
 
   if(abs(input-RPV)<tolerance){
     finish();
+    
   }
    if(abs(input2-RPV2)<tolerance){
     finish2();
   }
-
+  
+  Serial.print("Month: ");
+  Serial.print(User_Input);
+  Serial.print(" || ");
   Serial.print("Tilt Pot: ");
   Serial.print(input);
+  Serial.print(" || ");
+  Serial.print("Tilt Required: ");
+  Serial.print(RPV);
   Serial.print(" || ");
   Serial.print("Azimuth Pot: ");
   Serial.print(input2);
   Serial.print(" || ");
-  Serial.print("RPV: ");
-  Serial.print(RPV);
-  Serial.print(" || ");
-  Serial.print("RPV2: ");
+  Serial.print("Required Azimuth: ");
   Serial.println(RPV2);
 
 

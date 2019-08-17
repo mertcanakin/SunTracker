@@ -1,8 +1,8 @@
 #include <virtuabotixRTC.h>
 #include <PID_v1.h>
 #define MotEnable 9 
-#define MotFwd  10  
-#define MotRev  11 
+#define MotFwd  11  
+#define MotRev  10 
 
 virtuabotixRTC myRTC(5, 4, 3);  //rst-->3 dat-->4 clk-->5
                       
