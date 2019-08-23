@@ -1,8 +1,8 @@
 #include <virtuabotixRTC.h>
 #include <PID_v1.h>
 #define MotEnable 9 
-#define MotFwd  11  
-#define MotRev  10 
+#define MotFwd  10  
+#define MotRev  11 
 
 virtuabotixRTC myRTC(5, 4, 3);  //rst-->3 dat-->4 clk-->5
                       
@@ -37,8 +37,8 @@ void loop() {
   Serial.print("this is RPV - "); 
   Serial.println(RPV);               
 
-  setpoint = RPV;                    //PID while work to achive this value consider as SET value
-  input = analogRead(A0) ;           // data from encoder consider as a Process value
+  setpoint = analogRead(A3);                    //PID while work to achive this value consider as SET value
+  input = analogRead(A2) ;           // data from encoder consider as a Process value
   Serial.print("pot - ");
   Serial.println(User_Input);
   myPID.Compute();                 // calculate new output
